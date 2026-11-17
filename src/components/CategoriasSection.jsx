@@ -75,6 +75,27 @@ function CategoriasSection() {
     }
   }
 
+  async function editar(id, cambios) {
+    try {
+      setError(null);
+
+      const respuesta = await fetch(`${API_URL}/categorias/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cambios),
+      });
+
+      if (!respuesta.ok) {
+        throw new Error("Error " + respuesta.status);
+      }
+
+      const actualizada = await respuesta.json();
+      setCategorias(categorias.map((c) => (c.id === id ? actualizada : c)));
+    } catch (e) {
+      setError("No se pudo editar: " + e.message);
+    }
+  }
+
   return (
     <section>
       <h2>Categorías</h2>
@@ -97,6 +118,14 @@ function CategoriasSection() {
               <td>{c.nombre}</td>
               <td>{c.descripcion}</td>
               <td>
+                <button
+                  onClick={() => {
+                    const nuevo = window.prompt("Nuevo nombre", c.nombre);
+                    if (nuevo) editar(c.id, { nombre: nuevo });
+                  }}
+                >
+                  Editar
+                </button>
                 <button onClick={() => eliminar(c.id)}>
                   Eliminar
                 </button>
