@@ -62,6 +62,19 @@ function LugaresSection() {
     }
   }
 
+  async function eliminar(id) {
+    try {
+      setError(null);
+      const respuesta = await fetch(`${API_URL}/lugares/${id}/`, {
+        method: "DELETE",
+      });
+      if (!respuesta.ok) throw new Error("Error " + respuesta.status);
+      setLugares(lugares.filter((l) => l.id !== id));
+    } catch (e) {
+      setError("No se pudo eliminar: " + e.message);
+    }
+  }
+
   function nombreCategoria(id) {
     const cat = categorias.find((c) => c.id === id);
     return cat ? cat.nombre : "—";
@@ -78,6 +91,7 @@ function LugaresSection() {
             <th>Nombre</th>
             <th>Dirección</th>
             <th>Categoría</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -86,6 +100,9 @@ function LugaresSection() {
               <td>{l.nombre}</td>
               <td>{l.direccion}</td>
               <td>{nombreCategoria(l.categoria)}</td>
+              <td>
+                <button onClick={() => eliminar(l.id)}>Eliminar</button>
+              </td>
             </tr>
           ))}
         </tbody>
