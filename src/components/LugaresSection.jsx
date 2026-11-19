@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_URL } from "../api";
 
-function LugaresSection() {
+function LugaresSection({ versionCategorias, onCambio }) {
   const [lugares, setLugares] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -34,8 +34,9 @@ function LugaresSection() {
   }
 
   useEffect(() => {
-    cargar();
-  }, []);
+    const temporizador = window.setTimeout(() => { void cargar(); }, 0);
+    return () => window.clearTimeout(temporizador);
+  }, [versionCategorias]);
 
   function cambiar(evento) {
     setForm({ ...form, [evento.target.name]: evento.target.value });
@@ -56,6 +57,7 @@ function LugaresSection() {
       if (!respuesta.ok) throw new Error("Error " + respuesta.status);
       const nuevo = await respuesta.json();
       setLugares([...lugares, nuevo]);
+      onCambio();
       setForm({ nombre: "", descripcion: "", direccion: "", categoria: "" });
     } catch (e) {
       setError("No se pudo crear el lugar: " + e.message);
@@ -70,6 +72,7 @@ function LugaresSection() {
       });
       if (!respuesta.ok) throw new Error("Error " + respuesta.status);
       setLugares(lugares.filter((l) => l.id !== id));
+      onCambio();
     } catch (e) {
       setError("No se pudo eliminar: " + e.message);
     }

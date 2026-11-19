@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_URL } from "../api";
 
-function ResenasSection() {
+function ResenasSection({ versionLugares }) {
   const [resenas, setResenas] = useState([]);
   const [lugares, setLugares] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -34,8 +34,9 @@ function ResenasSection() {
   }
 
   useEffect(() => {
-    cargar();
-  }, []);
+    const temporizador = window.setTimeout(() => { void cargar(); }, 0);
+    return () => window.clearTimeout(temporizador);
+  }, [versionLugares]);
 
   function cambiar(evento) {
     setForm({ ...form, [evento.target.name]: evento.target.value });

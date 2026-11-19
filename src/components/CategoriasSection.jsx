@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { API_URL } from "../api";
 
-function CategoriasSection() {
+function CategoriasSection({ onCambio }) {
   const [categorias, setCategorias] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
+
+  const [editando, setEditando] = useState(null);
+  const [nuevoNombre, setNuevoNombre] = useState("");
 
   async function cargar() {
     try {
@@ -29,7 +32,8 @@ function CategoriasSection() {
   }
 
   useEffect(() => {
-    cargar();
+    const temporizador = window.setTimeout(() => { void cargar(); }, 0);
+    return () => window.clearTimeout(temporizador);
   }, []);
 
   async function crear(evento) {
@@ -50,6 +54,7 @@ function CategoriasSection() {
 
       const nueva = await respuesta.json();
       setCategorias([...categorias, nueva]);
+      onCambio();
       setNombre("");
       setDescripcion("");
     } catch (e) {
@@ -70,6 +75,7 @@ function CategoriasSection() {
       }
 
       setCategorias(categorias.filter((c) => c.id !== id));
+      onCambio();
     } catch (e) {
       setError("No se pudo eliminar: " + e.message);
     }
@@ -90,7 +96,9 @@ function CategoriasSection() {
       }
 
       const actualizada = await respuesta.json();
+      setEditando(null);
       setCategorias(categorias.map((c) => (c.id === id ? actualizada : c)));
+      onCambio();
     } catch (e) {
       setError("No se pudo editar: " + e.message);
     }
@@ -120,8 +128,8 @@ function CategoriasSection() {
               <td>
                 <button
                   onClick={() => {
-                    const nuevo = window.prompt("Nuevo nombre", c.nombre);
-                    if (nuevo) editar(c.id, { nombre: nuevo });
+                    setEditando(c.id);
+                    setNuevoNombre(c.nombre);
                   }}
                 >
                   Editar
@@ -134,6 +142,24 @@ function CategoriasSection() {
           ))}
         </tbody>
       </table>
+
+      {editando !== null && (
+        <form onSubmit={(evento) => {
+          evento.preventDefault();
+          if (nuevoNombre.trim()) editar(editando, { nombre: nuevoNombre.trim() });
+        }}>
+          <label htmlFor="editar-categoria">Nuevo nombre de categoría</label>
+          <input
+            id="editar-categoria"
+            value={nuevoNombre}
+            onChange={(evento) => setNuevoNombre(evento.target.value)}
+            maxLength={100}
+            required
+          />
+          <button type="submit">Guardar cambios</button>
+          <button type="button" onClick={() => setEditando(null)}>Cancelar</button>
+        </form>
+      )}
 
       <form onSubmit={crear}>
         <input
